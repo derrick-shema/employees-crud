@@ -1,31 +1,36 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from typing import Optional, List
+from sqlmodel import SQLModel, Field, Session, create_engine, select
 from fastapi.middleware.cors import CORSMiddleware
 import os 
 import sqlite3
 
-DB_PATH = 'employees.db'
+# Define the Employee model
+class Employee(SQLModel, table=True):
+    __tablename__ = "employees" # type: ignore
+    id: Optional[int] = Field(default=None, primary_key=True)
+    first_name:str
+    last_name:str
+    title:str
+
+# Create the database engine
+sqlite_file_name = "employees.db"
+engine = create_engine(f"sqlite:///{sqlite_file_name}", echo=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if not os.path.exists(DB_PATH):
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS employees (
-                  id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  first_name TEXT NOT NULL,
-                  last_name TEXT NOT NULL,
-                  title TEXT NOT NULL
-            )
-        """)
-
-        conn.commit()
-        conn.close()
-    
+    # Creat tables at startup
+    SQLModel.metadata.create_all(engine)
     yield
+    # (Optional) Cleanup code here
 
 app = FastAPI(lifespan=lifespan)
+
+# Dependency to get a session
+def get_session():
+    with Session(engine) as session:
+        yield session
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,14 +41,7 @@ app.add_middleware(
 
 )
 
-# get all employees
-@app.get('/api/employees')
-def employees():
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    query = 'SELECT first_name, last_name, title FROM employees'
-    cur.execute(query)
-    rows = cur.fetchall()
-    conn.close()
-    employees = [{"first_name": row[0], "last_name": row[1], "title": row[2]} for row in rows]
+@app.get("/api/employees", response_model=List[Employee])
+def get_employees(session: Session = Depends(get_session)):
+    employees = session.exec(select(Employee)).all()
     return employees
