@@ -40,8 +40,18 @@ app.add_middleware(
     allow_headers=["*"],
 
 )
+# Create an employee
+@app.post("/api/employees", response_model=Employee)
+def create_employee(employee: Employee, session: Session = Depends(get_session)):
+    session.add(employee)
+    session.commit()
+    session.refresh(employee)
+    return employee
 
+# Get all employees
 @app.get("/api/employees", response_model=List[Employee])
 def get_employees(session: Session = Depends(get_session)):
     employees = session.exec(select(Employee)).all()
     return employees
+
+
