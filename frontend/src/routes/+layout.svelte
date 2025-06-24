@@ -10,6 +10,14 @@
   	<span class="text-2xl font-bold text-blue-800">AwesomeInc</span>
 </div>
   <nav class="">
+	<a 
+		href="/about" 
+		class= {`px-3 py-1 rounded transition hover:bg-blue-100 hover:text-blue-900 text-blue-700 ${
+			page.url.pathname === '/about'
+      		? 'bg-blue-200 text-blue-900 font-semibold'
+      		: 'text-blue-700'
+		}`}
+	>About</a>
     <a 
 		href= '/employees' 
 		class= {`px-3 py-1 rounded transition hover:bg-blue-100 hover:text-blue-900 text-blue-700 ${
@@ -18,14 +26,7 @@
       		: 'text-blue-700'
 		}`}
 	>Employees</a>
-    <a 
-		href="/about" 
-		class= {`px-3 py-1 rounded transition hover:bg-blue-100 hover:text-blue-900 text-blue-700 ${
-			page.url.pathname === '/about'
-      		? 'bg-blue-200 text-blue-900 font-semibold'
-      		: 'text-blue-700'
-		}`}
-	>About</a>
+    
   </nav>
 </header>
 {@render children()}

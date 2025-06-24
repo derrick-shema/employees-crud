@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException, Path
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Session, create_engine, select
 from fastapi.middleware.cors import CORSMiddleware
@@ -53,5 +53,14 @@ def create_employee(employee: Employee, session: Session = Depends(get_session))
 def get_employees(session: Session = Depends(get_session)):
     employees = session.exec(select(Employee)).all()
     return employees
+
+@app.delete("api/employees/{employee_id}")
+def delete_employee(employee_id: int = Path(...), session: Session = Depends(get_session)):
+    employee = session.get(Employee, employee_id)
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    session.delete(employee)
+    session.commit()
+    return {"ok": True}
 
 
