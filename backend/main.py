@@ -54,7 +54,7 @@ def get_employees(session: Session = Depends(get_session)):
     employees = session.exec(select(Employee)).all()
     return employees
 
-@app.delete("api/employees/{employee_id}")
+@app.delete("/api/employees/{employee_id}")
 def delete_employee(employee_id: int = Path(...), session: Session = Depends(get_session)):
     employee = session.get(Employee, employee_id)
     if not employee:

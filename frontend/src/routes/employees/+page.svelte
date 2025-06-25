@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidate } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 
   export let data;
   const employees = data.employees;
@@ -8,7 +8,7 @@
       method: 'DELETE'
     });
     // Refresh the data from the server
-    await invalidate('http://localhost:8000/api/employees');
+    await invalidateAll();
   }
 </script>
 <section>
