@@ -11,6 +11,14 @@
 </div>
   <nav class="">
 	<a 
+		href="/" 
+		class= {`px-3 py-1 rounded transition hover:bg-blue-100 hover:text-blue-900 text-blue-700 ${
+			page.url.pathname === '/about'
+      		? 'bg-blue-200 text-blue-900 font-semibold'
+      		: 'text-blue-700'
+		}`}
+	>Home</a>
+	<a 
 		href="/about" 
 		class= {`px-3 py-1 rounded transition hover:bg-blue-100 hover:text-blue-900 text-blue-700 ${
 			page.url.pathname === '/about'

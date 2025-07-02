@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import Depends, FastAPI, HTTPException, Path
+from fastapi import Body, Depends, FastAPI, HTTPException, Path
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Session, create_engine, select
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,7 +16,7 @@ class Employee(SQLModel, table=True):
 
 # Create the database engine
 sqlite_file_name = "employees.db"
-engine = create_engine(f"sqlite:///{sqlite_file_name}", echo=True)
+engine = create_engine(f"sqlite:///{sqlite_file_name}", echo=True) # core database connection object that the app will use for all database operations
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,6 +54,15 @@ def get_employees(session: Session = Depends(get_session)):
     employees = session.exec(select(Employee)).all()
     return employees
 
+# Get one employee
+@app.get("/api/employees/{employee_id}", response_model=Employee)
+def get_employee(employee_id: int = Path(...), session: Session = Depends(get_session)):
+    employee = session.get(Employee, employee_id)
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return employee
+
+# delete employee
 @app.delete("/api/employees/{employee_id}")
 def delete_employee(employee_id: int = Path(...), session: Session = Depends(get_session)):
     employee = session.get(Employee, employee_id)
@@ -62,5 +71,24 @@ def delete_employee(employee_id: int = Path(...), session: Session = Depends(get
     session.delete(employee)
     session.commit()
     return {"ok": True}
+
+# update employee
+@app.put('/api/employees/{employee_id}', response_model=Employee)
+def update_employee(
+    employee_id: int = Path(...),
+    updated: Employee = Body(...),
+    session: Session = Depends(get_session)
+):
+    employee = session.get(Employee, employee_id)
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    # update fields
+    employee.first_name = updated.first_name
+    employee.last_name = updated.last_name
+    employee.title = updated.title
+    session.add(employee)
+    session.commit()
+    session.refresh(employee)
+    return employee
 
 

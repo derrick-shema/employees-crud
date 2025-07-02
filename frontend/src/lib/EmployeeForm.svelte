@@ -10,6 +10,11 @@
 
   let form: Employee = { ...employee };
 
+  // Update form when employee prop changes
+  $: if (employee) {
+    form = { ...employee };
+  }
+
   function handleSubmit(event: Event) {
     event.preventDefault();
     onSubmit(form);
